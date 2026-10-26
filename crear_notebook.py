@@ -73,6 +73,9 @@ Se seleccionó el **Caso: Deserción Universitaria** (`sheet_name="Desercion"`),
 """)
 
 add_code(r'''
+import os
+import shutil
+import urllib.request
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -81,6 +84,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier, plot_tree, export_text
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, classification_report
+
+# Asegurar disponibilidad de archivos en Google Colab o entorno local
+archivos_necesarios = ['BD_Semana10_Riesgos.xlsx', 'arbol_a_mano_parte1.png', 'simulacion_interactiva.html']
+base_github = "https://raw.githubusercontent.com/jussepe06/tarea-sem-10-AGi-grupo-2/main/"
+
+for archivo in archivos_necesarios:
+    if not os.path.exists(archivo):
+        if os.path.exists(f"/{archivo}"):
+            shutil.copy(f"/{archivo}", archivo)
+            print(f"[OK] Archivo movido desde la raíz /: {archivo}")
+        elif os.path.exists(f"/content/{archivo}"):
+            shutil.copy(f"/content/{archivo}", archivo)
+            print(f"[OK] Archivo referenciado desde /content: {archivo}")
+        else:
+            try:
+                urllib.request.urlretrieve(base_github + archivo, archivo)
+                print(f"[OK] Descargado automáticamente desde GitHub: {archivo}")
+            except Exception as e:
+                print(f"[AVISO] No se pudo descargar {archivo}: {e}")
 
 # Configuración del caso y lectura desde Excel
 CASO, OBJETIVO = "Desercion", "deserta"
@@ -399,7 +421,7 @@ add_md("""
 # Bono (+2) — Simulación Interactiva con IA
 
 Se desarrolló la aplicación web interactiva autocontenida solicitada en el archivo:  
-🔗 **`simulacion_interactiva.html`** (también accesible directamente vía `index.html`).
+🔗 **`simulacion_interactiva.html`** (también accesible directamente vía `index.html` en GitHub Pages).
 
 ### Características Implementadas:
 1. **Pestaña 1 (Gini Paso a Paso):**
@@ -413,6 +435,36 @@ Se desarrolló la aplicación web interactiva autocontenida solicitada en el arc
    * Métricas lado a lado: Accuracy en Train y Test, Recall, F1-Score, matrices de confusión interactivas `[[VN, FP], [FN, VP]]` y gráfico de barras en **Chart.js** con colores `#002060` y `#DCE6F2`.
    * Aviso visible: *«Datos sintéticos con fines didácticos»*.
 """)
+
+add_code(r'''
+# BONO (+2): Visualización e integración de la Simulación Interactiva
+import IPython.display as display
+
+enlace_github_pages = "https://jussepe06.github.io/tarea-sem-10-AGi-grupo-2/"
+enlace_repositorio = "https://github.com/jussepe06/tarea-sem-10-AGi-grupo-2"
+
+display.display(display.Markdown(f"""
+### 🌐 Enlaces Oficiales para Entrega del Bono (+2 Puntos):
+* 🔗 **Simulación Interactiva en Vivo (GitHub Pages):** [{enlace_github_pages}]({enlace_github_pages})
+* 📂 **Repositorio del Código Fuente (GitHub):** [{enlace_repositorio}]({enlace_repositorio})
+
+---
+### 🖥️ Simulación Web Interactiva Renderizada en el Cuaderno:
+"""))
+
+html_file = 'simulacion_interactiva.html'
+if os.path.exists(html_file):
+    with open(html_file, 'r', encoding='utf-8') as f:
+        html_code = f.read()
+    # Embeber la aplicación web en un iframe interactivo dentro de Google Colab
+    display.display(display.HTML(f"""
+    <div style="border: 2px solid #002060; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,32,96,0.15); margin-top: 10px;">
+        <iframe srcdoc="{html_code.replace('&', '&amp;').replace('"', '&quot;')}" width="100%" height="800px" style="border: none;"></iframe>
+    </div>
+    """))
+else:
+    display.display(display.Markdown(f"Accede a la simulación directamente en: [{enlace_github_pages}]({enlace_github_pages})"))
+''')
 
 notebook = {
     "cells": cells,
